@@ -12,7 +12,7 @@ import random
 password_file = "passwords.txt"
 
 # Open the file in read mode
-open_file = open(password_file, 'r')
+open_file = open(password_file, "r")
 
 # Read entire file in to a single string
 password_list = open_file.read()
