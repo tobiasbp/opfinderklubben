@@ -3,7 +3,12 @@
 
 """
 Starfield demo
+
+Based on:
+http://programarcadegames.com/python_examples/show_file.php?file=moving_sprites.py
 """
+# Desired framerate in frames per second. Try out other values.              
+FPS = 30
 
 #the next line is only needed for python2.x and not necessary for python3.x
 #from __future__ import print_function, division
@@ -17,26 +22,15 @@ WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
+# Size of the screen/window
 screen_width = 400
 screen_height = 400
 
 # Initialize Pygame.
 pygame.init()
 
-# Set size of pygame window.
+# Create window/display/screen.
 screen = pygame.display.set_mode((screen_width,screen_height))
-
-# Create empty pygame surface. We use this clear the screen
-eraser = pygame.Surface(screen.get_size())
-
-# We will draw stars to this surface
-starfield = pygame.Surface(screen.get_size())
-
-# Fill the eraser with black color.
-eraser.fill((0, 0, 0))
-
-# Fill starfield with black
-starfield.fill((0, 0, 0))
 
 # A class (from Sprite) representing the background stars in the starfield
 class Star(pygame.sprite.Sprite):
@@ -55,7 +49,7 @@ class Star(pygame.sprite.Sprite):
         super().__init__()
  
         
-        # Create an image of the block, and fill it with a color.
+        # Create an empty image (surface).
         # This could also be an image loaded from the disk.
         self.image = pygame.Surface([size, size])
         
@@ -63,10 +57,10 @@ class Star(pygame.sprite.Sprite):
         self.image.fill([1,2,3])
         self.image.set_colorkey([1,2,3])
         
-        # The intensity of the color is based on the size
+        # The intensity of the color of the star is based on it's size
         i = min(255, (255/size*4))
         
-        # Draw an ellipse
+        # Draw an ellipse (The star)
         pygame.draw.ellipse(self.image, [i, i, i], [0, 0, size, size]) 
                 
         # Fetch the rectangle object that has the dimensions of the image
@@ -75,7 +69,7 @@ class Star(pygame.sprite.Sprite):
         # of rect.x and rect.y
         self.rect = self.image.get_rect()
         
-        # Store my position as a float
+        # Store stars position as a float
         self.pos_x = 0.0
         self.pos_y = 0.0
         
@@ -86,7 +80,7 @@ class Star(pygame.sprite.Sprite):
     def update(self):
         """ Move star """
         
-        # Update my position
+        # Update position
         self.pos_x += player['dx'] * self.speed
         self.pos_y += player['dy'] * self.speed
         
@@ -115,7 +109,7 @@ for i in range(25):
     # This represents a star
     star = Star(random.randrange(5,40))
  
-    # Set a random location for the block
+    # Set a random location for the star
     star.pos_x = random.randrange(screen_width)
     star.pos_y = random.randrange(screen_height)
  
@@ -129,8 +123,7 @@ for i in range(25):
 clock = pygame.time.Clock()
 
 mainloop = True
-# Desired framerate in frames per second. Try out other values.              
-FPS = 30
+
 # How many seconds the "game" is played.
 playtime = 0.0
 
