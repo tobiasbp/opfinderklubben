@@ -35,6 +35,8 @@ while chars_to_replace < 5:
   # Randomly pick a password to be guessed
   word_to_guess = password_list[random.randint(0, len(password_list)-1)]
   
+  # FIXME: What if the password is shorter than the number of characters to guess?
+  
   # Convert the password to be guessed from a string to a list of single characters
   word_to_guess = list(password_list[random.randint(0, len(password_list)-1)])
   
