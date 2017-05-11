@@ -128,7 +128,7 @@ mainloop = True
 playtime = 0.0
 
 
-player = {'dir': 0, 'speed': 5.0, 'dx': 0.0, 'dy': 0.0}
+player = {'dir': 0, 'speed': 8.0, 'dx': 0.0, 'dy': 0.0}
  
 while mainloop:
     # Do not go faster than this framerate.
@@ -145,9 +145,9 @@ while mainloop:
             if event.key == pygame.K_ESCAPE:
                 mainloop = False
             if event.key == pygame.K_UP:
-                dy = -1    
+                player['speed'] += 1    
             if event.key == pygame.K_DOWN:
-                dy = 1
+                player['speed'] -= 1
             if event.key == pygame.K_LEFT:
                 player['dir'] += 10
             if event.key == pygame.K_RIGHT:
