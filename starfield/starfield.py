@@ -48,8 +48,10 @@ class Star(pygame.sprite.Sprite):
         # Call the parent class (Sprite) constructor
         super().__init__()
  
+        self.size = size
+        
         # Set layer
-        self._layer = size
+        self._layer = self.size
         
         # Create an empty image (surface). Needed by PyGame.
         # This could also be an image loaded from the disk.
@@ -79,7 +81,6 @@ class Star(pygame.sprite.Sprite):
         # Speed based on size. Smaller star is slower
         self.speed = size/100
         
-        
     def update(self):
         """ Move star """
         
@@ -89,19 +90,23 @@ class Star(pygame.sprite.Sprite):
         self.pos_y -= player['dy'] * self.speed
         
         # Move to the updated position (integer)
-        self.rect.x = self.pos_x
-        self.rect.y = self.pos_y
+        self.rect.centerx = self.pos_x
+        self.rect.centery = self.pos_y
         
-        # Wrap around screen edges
-        if self.pos_x < 0:
+        # Wrap around screen edges as new random star (with same size)
+        if self.rect.right < 0:
             self.pos_x =+ screen_width
-        if self.pos_x > screen_width:
+            self.pos_y = random.randrange(screen_height)
+        if self.rect.left > screen_width:
             self.pos_x = 0
-        if self.rect.y < 0:
+            self.pos_y = random.randrange(screen_height)
+        if self.rect.centery < 0:
             self.pos_y =+ screen_height
-        if self.rect.y > screen_height:
+            self.pos_x = random.randrange(screen_width)
+        if self.rect.centery > screen_height:
             #self.pos_y =- screen_height
             self.pos_y = 0
+            self.pos_x = random.randrange(screen_width)
  
 
 class Player(pygame.sprite.Sprite):
@@ -144,6 +149,19 @@ class Player(pygame.sprite.Sprite):
         
     def update(self):
         """ Move star """
+        # Get pressed/held status of all keys        
+        pressed = pygame.key.get_pressed()
+    
+        # Check for keys
+        if pressed[pygame.K_LEFT]:
+            player['dir'] -= PLAYER_ROT_SPEED
+        if pressed[pygame.K_RIGHT]:
+            player['dir'] += PLAYER_ROT_SPEED
+        if pressed[pygame.K_UP]:
+            player['speed'] += PLAYER_ACCELERATION
+        if pressed[pygame.K_DOWN]:
+            player['speed'] -= PLAYER_ACCELERATION
+            
         # Rotated copies of image and rect
         self.rot_image = pygame.transform.rotate(self.image_orig, -player['dir'])
         self.rot_rect = self.rot_image.get_rect(center=self.rect.center)
@@ -201,17 +219,6 @@ while mainloop:
             if event.key == pygame.K_ESCAPE:
                 mainloop = False
                             
-    # Get pressed/held status of all keys        
-    pressed = pygame.key.get_pressed()
-    
-    if pressed[pygame.K_LEFT]:
-        player['dir'] -= PLAYER_ROT_SPEED
-    if pressed[pygame.K_RIGHT]:
-        player['dir'] += PLAYER_ROT_SPEED
-    if pressed[pygame.K_UP]:
-        player['speed'] += PLAYER_ACCELERATION
-    if pressed[pygame.K_DOWN]:
-        player['speed'] -= PLAYER_ACCELERATION
         
     # Print framerate and playtime in titlebar.
     text = "FPS: {0:.2f}   Playtime: {1:.2f}".format(clock.get_fps(), playtime)
@@ -225,8 +232,8 @@ while mainloop:
     screen.fill(BLACK)
     
     # Update sprites
-    star_group.update()
     player_group.update()
+    star_group.update()
     
     # Draw all sprites on the surface screen 
     star_group.draw(screen)
