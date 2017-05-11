@@ -23,8 +23,8 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 
 # Size of the screen/window
-screen_width = 400
-screen_height = 400
+screen_width = 600
+screen_height = 600
 
 # Initialize Pygame.
 pygame.init()
@@ -49,7 +49,7 @@ class Star(pygame.sprite.Sprite):
         super().__init__()
  
         
-        # Create an empty image (surface).
+        # Create an empty image (surface). Needed by PyGame.
         # This could also be an image loaded from the disk.
         self.image = pygame.Surface([size, size])
         
@@ -58,7 +58,7 @@ class Star(pygame.sprite.Sprite):
         self.image.set_colorkey([1,2,3])
         
         # The intensity of the color of the star is based on it's size
-        i = min(255, (255/size*4))
+        i = min(255, (255/size*10))
         
         # Draw an ellipse (The star)
         pygame.draw.ellipse(self.image, [i, i, i], [0, 0, size, size]) 
@@ -67,6 +67,7 @@ class Star(pygame.sprite.Sprite):
         # image.
         # Update the position of this object by setting the values
         # of rect.x and rect.y
+        # Needed by PyGame
         self.rect = self.image.get_rect()
         
         # Store stars position as a float
@@ -80,11 +81,11 @@ class Star(pygame.sprite.Sprite):
     def update(self):
         """ Move star """
         
-        # Update position
+        # Update position (float)
         self.pos_x += player['dx'] * self.speed
         self.pos_y += player['dy'] * self.speed
         
-        # Move to the updated position
+        # Move to the updated position (integer)
         self.rect.x = self.pos_x
         self.rect.y = self.pos_y
         
@@ -102,10 +103,10 @@ class Star(pygame.sprite.Sprite):
  
 # This is a list of 'sprites.' Each star in the program is
 # added to this list. The list is managed by a class called 'Group.'
-star_list = pygame.sprite.Group()
+star_group = pygame.sprite.Group()
 
 # Add stars to list
-for i in range(25):
+for i in range(50):
     # This represents a star
     star = Star(random.randrange(5,40))
  
@@ -114,7 +115,7 @@ for i in range(25):
     star.pos_y = random.randrange(screen_height)
  
     # Add the star to the list of stars
-    star_list.add(star)
+    star_group.add(star)
     
 
 
@@ -132,7 +133,7 @@ player = {'dir': 0, 'speed': 8.0, 'dx': 0.0, 'dy': 0.0}
  
 while mainloop:
     # Do not go faster than this framerate.
-    milliseconds = clock.tick(FPS) 
+    milliseconds = clock.tick(FPS)  
     playtime += milliseconds / 1000.0 
     
     # Process events
@@ -157,16 +158,18 @@ while mainloop:
     text = "FPS: {0:.2f}   Playtime: {1:.2f}".format(clock.get_fps(), playtime)
     pygame.display.set_caption(text)
     
+    # How far did player move
     player['dx'] = sin(radians(player['dir'])) * player['speed']
     player['dy'] = cos(radians(player['dir'])) * player['speed']
     
+    # Clear screen (paint)
     screen.fill(BLACK)
     
-    # Move all stars
-    star_list.update()
+    # Update all stars
+    star_group.update()
     
     # Draw all stars on the surface screen 
-    star_list.draw(screen)
+    star_group.draw(screen)
     
    
     
