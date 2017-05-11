@@ -42,7 +42,7 @@ class Star(pygame.sprite.Sprite):
         """ Constructor. Pass in the color of the block,
         and its x and y position. """
         
-        # Set layer (NOT WORKING?)
+        # Set layer
         self._layer = size
         
         # Call the parent class (Sprite) constructor
@@ -103,7 +103,8 @@ class Star(pygame.sprite.Sprite):
  
 # This is a list of 'sprites.' Each star in the program is
 # added to this list. The list is managed by a class called 'Group.'
-star_group = pygame.sprite.Group()
+#star_group = pygame.sprite.Group()
+star_group = pygame.sprite.LayeredUpdates()
 
 # Add stars to list
 for i in range(50):
