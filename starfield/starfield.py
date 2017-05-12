@@ -17,7 +17,7 @@ PLAYER_ACCELERATION = 1
 #from __future__ import print_function, division
 import pygame
 import random
-from math import cos, sin, radians
+from math import cos, sin, radians, sqrt
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -35,6 +35,7 @@ pygame.init()
 # Create window/display/screen.
 screen = pygame.display.set_mode((screen_width,screen_height))
 
+
 # A class (from Sprite) representing the background stars in the starfield
 class Star(pygame.sprite.Sprite):
     """
@@ -42,8 +43,7 @@ class Star(pygame.sprite.Sprite):
     It derives from the "Sprite" class in Pygame
     """
     def __init__(self, size):
-        """ Constructor. Pass in the color of the block,
-        and its x and y position. """
+        """ Constructor. Pass in the size of the star """
         
         # Call the parent class (Sprite) constructor
         super().__init__()
@@ -75,8 +75,8 @@ class Star(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         
         # Store stars position as a float
-        self.pos_x = 0.0
-        self.pos_y = 0.0
+        self.pos_x = random.randrange(screen_width)
+        self.pos_y = random.randrange(screen_height)
         
         # Speed based on size. Smaller star is slower
         self.speed = size/100
@@ -115,8 +115,8 @@ class Player(pygame.sprite.Sprite):
     It derives from the "Sprite" class in Pygame
     """
     def __init__(self, size=40):
-        """ Constructor. Pass in the color of the block,
-        and its x and y position. """
+        """ Constructor. Optionally pass in the 
+        size of the player. """
         
         # Call the parent class (Sprite) constructor
         super().__init__()
@@ -148,7 +148,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = (screen_width/2, screen_height/2)
         
     def update(self):
-        """ Move star """
+        """ Move player """
         # Get pressed/held status of all keys        
         pressed = pygame.key.get_pressed()
     
@@ -161,6 +161,8 @@ class Player(pygame.sprite.Sprite):
             player['speed'] += PLAYER_ACCELERATION
         if pressed[pygame.K_DOWN]:
             player['speed'] -= PLAYER_ACCELERATION
+        if pressed[pygame.K_SPACE]:
+            bullet_group.add(Bullet(self.rect.center))
             
         # Rotated copies of image and rect
         self.rot_image = pygame.transform.rotate(self.image_orig, -player['dir'])
@@ -169,7 +171,80 @@ class Player(pygame.sprite.Sprite):
         self.image = self.rot_image
         self.rect = self.rot_rect
         
+class Bullet(pygame.sprite.Sprite):
+    """
+    This class represents a bullet
+    It derives from the "Sprite" class in Pygame
+    """
+    def __init__(self, center, speed=2.0, bullet_range=screen_height/2, size=5, layer=100):
+        """ Constructor. Optionally pass in the size
+        of the bullet and the layer """
         
+        # Call the parent class (Sprite) constructor
+        super().__init__()
+ 
+        # Set layer. Nice to be on the same layer as the one shooting
+        self._layer = layer
+
+        # My center as floats
+        self.centerx = center[0]
+        self.centery = center[1]
+        
+        # Time To Live (Bullet will die when travveled this far)
+        self.bullet_range = bullet_range
+        
+        # How far have I traveled
+        self.dist = 0.0
+        
+        # Speed of bullet 
+        self.speedx = cos(radians(player['dir'])) * speed
+        self.speedy = sin(radians(player['dir'])) * speed
+        
+        # This is the speed the bullet inherits from the player
+        self.start_speedx = player['dx'] 
+        self.start_speedy = player['dy'] 
+        
+        # Create an empty image (surface). Needed by PyGame.
+        # This could also be an image loaded from the disk.
+        self.image = pygame.Surface([size, size])
+        
+        # Unlikely color is transparent background
+        self.image.fill([1,2,3])
+        self.image.set_colorkey([1,2,3])
+        
+        # Draw space ship
+        pygame.draw.ellipse(self.image, RED, [0,0,size,size]) 
+                
+        # Fetch the rectangle object that has the dimensions of the image
+        # image.
+        # Update the position of this object by setting the values
+        # of rect.x and rect.y
+        self.rect = self.image.get_rect()
+        
+        # Set initial position on screen
+        self.rect.center = (self.centerx, self.centery)
+               
+    def update(self):
+        """ Move bullet """
+        # Move bullet in relation to the player (The "camera")
+        # That is, this is ignoring the bullets own speed
+        self.centerx -= player['dx']
+        self.centery -= player['dy']
+
+        # Move bullet based on own speeds
+        self.centerx += self.speedx + self.start_speedx
+        self.centery += self.speedy + self.start_speedy
+
+        # Update position of bullet graphic
+        self.rect.centerx = self.centerx
+        self.rect.centery = self.centery
+
+        # Calculate how far bullet has traveled (Self propelled)
+        self.dist += sqrt(self.speedx**2 + self.speedy**2)
+
+        # Remeove bullet when traveled max distance
+        if self.dist > self.bullet_range:
+            self.kill()
 
  
 # This is a list of 'sprites.' Each star in the program is
@@ -177,20 +252,23 @@ class Player(pygame.sprite.Sprite):
 #star_group = pygame.sprite.Group()
 star_group = pygame.sprite.LayeredUpdates()
 
-# Add stars to list
+# Add stars to group
 for i in range(50):
     # This represents a star
     star = Star(random.randrange(5,40))
  
     # Set a random location for the star
-    star.pos_x = random.randrange(screen_width)
-    star.pos_y = random.randrange(screen_height)
+    #star.pos_x = random.randrange(screen_width)
+    #star.pos_y = random.randrange(screen_height)
  
     # Add the star to the list of stars
     star_group.add(star)
     
 player_group = pygame.sprite.LayeredUpdates()
 player_group.add(Player())
+
+# All bullets are in this group
+bullet_group = pygame.sprite.LayeredUpdates()
 
 # Create Pygame clock object.  
 clock = pygame.time.Clock()
@@ -201,7 +279,7 @@ mainloop = True
 playtime = 0.0
 
 
-player = {'dir': 0, 'speed': 8.0, 'dx': 0.0, 'dy': 0.0}
+player = {'dir': 0, 'speed': 0.0, 'dx': 0.0, 'dy': 0.0}
  
 while mainloop:
     # Do not go faster than this framerate.
@@ -234,10 +312,12 @@ while mainloop:
     # Update sprites
     player_group.update()
     star_group.update()
+    bullet_group.update()
     
     # Draw all sprites on the surface screen 
     star_group.draw(screen)
     player_group.draw(screen)
+    bullet_group.draw(screen)
     
    
     
