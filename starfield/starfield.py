@@ -12,12 +12,15 @@ FPS = 30
 
 PLAYER_ROT_SPEED = 6
 PLAYER_ACCELERATION = 1
+PLAYER_MAX_SPEED = 40
+PLAYER_MIN_SPEED = -1 * PLAYER_MAX_SPEED
 
 #the next line is only needed for python2.x and not necessary for python3.x
 #from __future__ import print_function, division
 import pygame
 import random
-from math import cos, sin, radians, sqrt
+#from math import cos, sin, radians, sqrt
+import math
 
 # Define some colors
 BLACK = (0, 0, 0)
@@ -157,12 +160,18 @@ class Player(pygame.sprite.Sprite):
             player['dir'] -= PLAYER_ROT_SPEED
         if pressed[pygame.K_RIGHT]:
             player['dir'] += PLAYER_ROT_SPEED
-        if pressed[pygame.K_UP]:
+        if pressed[pygame.K_UP] :
             player['speed'] += PLAYER_ACCELERATION
         if pressed[pygame.K_DOWN]:
             player['speed'] -= PLAYER_ACCELERATION
         if pressed[pygame.K_SPACE]:
             bullet_group.add(Bullet(self.rect.center))
+        
+        # Enforce speeds
+        if player['speed'] > PLAYER_MAX_SPEED:
+            player['speed'] = PLAYER_MAX_SPEED
+        if player['speed'] < PLAYER_MIN_SPEED:
+            player['speed'] = PLAYER_MIN_SPEED
             
         # Rotated copies of image and rect
         self.rot_image = pygame.transform.rotate(self.image_orig, -player['dir'])
@@ -197,8 +206,8 @@ class Bullet(pygame.sprite.Sprite):
         self.dist = 0.0
         
         # Speed of bullet 
-        self.speedx = cos(radians(player['dir'])) * speed
-        self.speedy = sin(radians(player['dir'])) * speed
+        self.speedx = math.cos(math.radians(player['dir'])) * speed
+        self.speedy = math.sin(math.radians(player['dir'])) * speed
         
         # This is the speed the bullet inherits from the player
         self.start_speedx = player['dx'] 
@@ -240,13 +249,12 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.centery = self.centery
 
         # Calculate how far bullet has traveled (Self propelled)
-        self.dist += sqrt(self.speedx**2 + self.speedy**2)
+        self.dist += math.sqrt(self.speedx**2 + self.speedy**2)
 
         # Remeove bullet when traveled max distance
         if self.dist > self.bullet_range:
             self.kill()
 
- 
 # This is a list of 'sprites.' Each star in the program is
 # added to this list. The list is managed by a class called 'Group.'
 #star_group = pygame.sprite.Group()
@@ -267,7 +275,7 @@ for i in range(50):
 player_group = pygame.sprite.LayeredUpdates()
 player_group.add(Player())
 
-# All bullets are in this group
+# Bullets will add themselves to this group when fired
 bullet_group = pygame.sprite.LayeredUpdates()
 
 # Create Pygame clock object.  
@@ -278,7 +286,7 @@ mainloop = True
 # How many seconds the "game" is played.
 playtime = 0.0
 
-
+# FIXME: This needs to be in the object!
 player = {'dir': 0, 'speed': 0.0, 'dx': 0.0, 'dy': 0.0}
  
 while mainloop:
@@ -303,8 +311,8 @@ while mainloop:
     pygame.display.set_caption(text)
     
     # How far did player move
-    player['dx'] = cos(radians(player['dir'])) * player['speed']
-    player['dy'] = sin(radians(player['dir'])) * player['speed']
+    player['dx'] = math.cos(math.radians(player['dir'])) * player['speed']
+    player['dy'] = math.sin(math.radians(player['dir'])) * player['speed']
     
     # Clear screen (paint)
     screen.fill(BLACK)

@@ -1,1 +1,2 @@
-A demo of stars floating on different layers in space. Left & right keys changes angle. Up & down controls speed.
+The player controls a spaceship an a backdrop of floating stars.
+Left & right keys changes angle. Up & down controls speed. Space fires bullets.
