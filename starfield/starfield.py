@@ -51,7 +51,7 @@ if pygame.joystick.get_count() > 0:
     print("Number of hats: ", joystick.get_numhats())
 else:
     print ("No joysticks detected")
-
+    joystick = None
 # Create window/display/screen.
 screen = pygame.display.set_mode((screen_width,screen_height))
 
@@ -176,16 +176,29 @@ class Player(pygame.sprite.Sprite):
         #for i in range(joystick.get_numbuttons()):
         #    print("Axis %d: %d" % (i, joystick.get_button(i)))
         
+        if joystick:
+            # Check for pressed/held keys
+            if joystick.get_axis(0) < 0:
+                player['dir'] -= PLAYER_ROT_SPEED
+            if joystick.get_axis(0) > 0:
+                player['dir'] += PLAYER_ROT_SPEED
+            if joystick.get_axis(1) < 0:
+                player['speed'] += PLAYER_ACCELERATION
+            if joystick.get_axis(1) > 0:
+                player['speed'] -= PLAYER_ACCELERATION
+            if joystick.get_button(1):
+                bullet_group.add(Bullet(self.rect.center))
+
         # Check for pressed/held keys
-        if pressed[pygame.K_LEFT] or joystick.get_axis(0) < 0:
+        if pressed[pygame.K_LEFT]:
             player['dir'] -= PLAYER_ROT_SPEED
-        if pressed[pygame.K_RIGHT] or joystick.get_axis(0) > 0:
+        if pressed[pygame.K_RIGHT]:
             player['dir'] += PLAYER_ROT_SPEED
-        if pressed[pygame.K_UP] or joystick.get_axis(1) < 0:
+        if pressed[pygame.K_UP]:
             player['speed'] += PLAYER_ACCELERATION
-        if pressed[pygame.K_DOWN] or joystick.get_axis(1) > 0:
+        if pressed[pygame.K_DOWN]:
             player['speed'] -= PLAYER_ACCELERATION
-        if pressed[pygame.K_SPACE] or joystick.get_button(1):
+        if pressed[pygame.K_SPACE]:
             bullet_group.add(Bullet(self.rect.center))
         
         # Enforce speeds
