@@ -35,6 +35,23 @@ screen_height = 600
 # Initialize Pygame.
 pygame.init()
 
+#Initialize joystick module
+pygame.joystick.init()
+
+# Initialize youstick
+# https://www.pygame.org/docs/ref/joystick.html
+if pygame.joystick.get_count() > 0:
+    print ("Initialized joystick")
+    joystick = pygame.joystick.Joystick(0)
+    # Initialize joystick object to add events to pygame event queue
+    joystick.init()
+    print("Name: ", joystick.get_name())
+    print("Number of axis: ", joystick.get_numaxes())
+    print("Number of buttons: ", joystick.get_numbuttons())
+    print("Number of hats: ", joystick.get_numhats())
+else:
+    print ("No joysticks detected")
+
 # Create window/display/screen.
 screen = pygame.display.set_mode((screen_width,screen_height))
 
@@ -152,19 +169,23 @@ class Player(pygame.sprite.Sprite):
         
     def update(self):
         """ Move player """
-        # Get pressed/held status of all keys        
+        # Get status of all keys        
         pressed = pygame.key.get_pressed()
-    
-        # Check for keys
-        if pressed[pygame.K_LEFT]:
+        
+        # Print joystick's buttons' states
+        #for i in range(joystick.get_numbuttons()):
+        #    print("Axis %d: %d" % (i, joystick.get_button(i)))
+        
+        # Check for pressed/held keys
+        if pressed[pygame.K_LEFT] or joystick.get_axis(0) < 0:
             player['dir'] -= PLAYER_ROT_SPEED
-        if pressed[pygame.K_RIGHT]:
+        if pressed[pygame.K_RIGHT] or joystick.get_axis(0) > 0:
             player['dir'] += PLAYER_ROT_SPEED
-        if pressed[pygame.K_UP] :
+        if pressed[pygame.K_UP] or joystick.get_axis(1) < 0:
             player['speed'] += PLAYER_ACCELERATION
-        if pressed[pygame.K_DOWN]:
+        if pressed[pygame.K_DOWN] or joystick.get_axis(1) > 0:
             player['speed'] -= PLAYER_ACCELERATION
-        if pressed[pygame.K_SPACE]:
+        if pressed[pygame.K_SPACE] or joystick.get_button(1):
             bullet_group.add(Bullet(self.rect.center))
         
         # Enforce speeds
@@ -296,6 +317,12 @@ while mainloop:
     
     # Process events
     for event in pygame.event.get():
+        # Possible joystick actions: JOYAXISMOTION JOYBALLMOTION JOYBUTTONDOWN JOYBUTTONUP JOYHATMOTION
+        
+        #if event.type == pygame.JOYBUTTONDOWN:
+        #    print("Joystick button pressed.")
+        #if event.type == pygame.JOYBUTTONUP:
+        #    print("Joystick button released.")
     
         # User presses QUIT-button.
         if event.type == pygame.QUIT:
